@@ -473,7 +473,7 @@ export interface IN8nUISettings {
 	};
 	versionNotifications: IVersionNotificationSettings;
 	instanceId: string;
-	telemetry: IDataObject;
+	telemetry: ITelemetrySettings;
 }
 
 export interface IWorkflowSettings extends IWorkflowSettingsWorkflow {
