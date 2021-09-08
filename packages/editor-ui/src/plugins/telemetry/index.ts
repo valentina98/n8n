@@ -65,7 +65,7 @@ class Telemetry {
 			const r = document.createElement("script");
 			r.type = "text/javascript";
 			r.async = !0;
-			r.src = "https://cdn.rudderlabs.com/v1/rudder-analytics.min.js";
+			r.src = "https://cdn.rudderlabs.com/v2/rudder-analytics.min.js?transport=beacon";
 			const a = document.getElementsByTagName("script")[0];
 			if(a && a.parentNode) {
 				a.parentNode.insertBefore(r, a);
