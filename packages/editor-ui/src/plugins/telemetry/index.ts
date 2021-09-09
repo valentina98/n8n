@@ -25,6 +25,15 @@ class Telemetry {
 
 	private telemetry?: any; // tslint:disable-line:no-any
 
+	private userNodesPanelSession = {
+		sessionId: '',
+		data: {
+			nodeFilter: '',
+			resultsNodes: [],
+			filterMode: 'Regular',
+		},
+	};
+
 	init(options: ITelemetrySettings, instanceId: string) {
 		if (options.enabled && !this.telemetry) {
 			if(!options.config) {
@@ -39,6 +48,20 @@ class Telemetry {
 	track(event: string, properties?: IDataObject) {
 		if (this.telemetry) {
 			this.telemetry.track(event, properties);
+		}
+	}
+
+	trackNodesPanel(event: string, properties: IDataObject = {}) {
+		if (this.telemetry) {
+			switch (event) {
+				case 'User changed nodes panel filter':
+					properties.nodes_panel_session_id = this.userNodesPanelSession.sessionId;
+					this.telemetry.track(event, properties);
+					this.userNodesPanelSession.data.filterMode = properties.new_filter as string;
+					break;
+				default:
+					break;
+			}
 		}
 	}
 
