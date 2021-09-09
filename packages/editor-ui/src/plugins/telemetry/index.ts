@@ -71,31 +71,30 @@ class Telemetry {
 	trackNodesPanel(event: string, properties: IDataObject = {}) {
 		if (this.telemetry) {
 			switch (event) {
-				case 'User opened nodes panel':
+				case 'nodeView.createNodeActiveChanged':
 					this.resetNodesPanelSession();
 					properties.nodes_panel_session_id = this.userNodesPanelSession.sessionId;
 					this.userNodesPanelSession.data.filterMode = properties.new_filter as string;
-					this.telemetry.track(event, properties);
+					this.telemetry.track('User opened nodes panel', properties);
 					break;
-				case 'User changed nodes panel filter':
+				case 'nodeCreateList.selectedTypeChanged':
 					properties.nodes_panel_session_id = this.userNodesPanelSession.sessionId;
 					this.userNodesPanelSession.data.filterMode = properties.new_filter as string;
-					this.telemetry.track(event, properties);
+					this.telemetry.track('User changed nodes panel filter', properties);
 					break;
-				case 'User entered nodes panel search term':
-					if(properties.newValue !== undefined) {
-						if((properties.newValue as string).length === 0 && this.userNodesPanelSession.data.nodeFilter.length > 0) {
-							this.telemetry.track(event, this.generateNodesPanelEvent());
-						}
+				case 'nodeCreateList.destroyed':
+					if(this.userNodesPanelSession.data.nodeFilter.length > 0 && this.userNodesPanelSession.data.nodeFilter !== '') {
+						this.telemetry.track('User entered nodes panel search term', this.generateNodesPanelEvent());
+					}
+					break;
+				case 'nodeCreateList.nodeFilterChanged':
+					if((properties.newValue as string).length === 0 && this.userNodesPanelSession.data.nodeFilter.length > 0) {
+						this.telemetry.track('User entered nodes panel search term', this.generateNodesPanelEvent());
+					}
 
-						if((properties.newValue as string).length > (properties.oldValue as string || '').length) {
-							this.userNodesPanelSession.data.nodeFilter = properties.newValue as string;
-							this.userNodesPanelSession.data.resultsNodes = ((properties.filteredNodes || []) as INodeCreateElement[]).map((node: INodeCreateElement) => node.key);
-						}
-					} else {
-						if(this.userNodesPanelSession.data.nodeFilter.length > 0 && this.userNodesPanelSession.data.nodeFilter !== '') {
-							this.telemetry.track(event, this.generateNodesPanelEvent());
-						}
+					if((properties.newValue as string).length > (properties.oldValue as string || '').length) {
+						this.userNodesPanelSession.data.nodeFilter = properties.newValue as string;
+						this.userNodesPanelSession.data.resultsNodes = ((properties.filteredNodes || []) as INodeCreateElement[]).map((node: INodeCreateElement) => node.key);
 					}
 					break;
 				default:

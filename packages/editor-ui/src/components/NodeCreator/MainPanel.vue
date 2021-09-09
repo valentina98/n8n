@@ -153,7 +153,7 @@ export default mixins(externalHooks).extend({
 				selectedType: this.selectedType,
 				filteredNodes: this.filteredNodeTypes,
 			});
-			this.$telemetry.trackNodesPanel('User entered nodes panel search term', {
+			this.$telemetry.trackNodesPanel('nodeCreateList.nodeFilterChanged', {
 				oldValue,
 				newValue,
 				selectedType: this.selectedType,
@@ -165,7 +165,7 @@ export default mixins(externalHooks).extend({
 				oldValue,
 				newValue,
 			});
-			this.$telemetry.trackNodesPanel('User changed nodes panel filter', {
+			this.$telemetry.trackNodesPanel('nodeCreateList.selectedTypeChanged', {
 				old_filter: oldValue,
 				new_filter: newValue,
 			});
@@ -284,7 +284,7 @@ export default mixins(externalHooks).extend({
 	},
 	async destroyed() {
 		this.$externalHooks().run('nodeCreateList.destroyed');
-		this.$telemetry.trackNodesPanel('User entered nodes panel search term');
+		this.$telemetry.trackNodesPanel('nodeCreateList.destroyed');
 	},
 });
 </script>
