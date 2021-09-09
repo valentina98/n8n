@@ -23,7 +23,12 @@ export function TelemetryPlugin(vue: typeof _Vue): void {
 
 class Telemetry {
 
-	private telemetry?: any; // tslint:disable-line:no-any
+	private _telemetry?: any; // tslint:disable-line:no-any
+	
+	private get telemetry() {
+		// @ts-ignore
+		return window.rudderanalytics;
+	}
 
 	private userNodesPanelSession = {
 		sessionId: '',
@@ -56,18 +61,18 @@ class Telemetry {
 			switch (event) {
 				case 'User changed nodes panel filter':
 					properties.nodes_panel_session_id = this.userNodesPanelSession.sessionId;
-					this.telemetry.track(event, properties);
 					this.userNodesPanelSession.data.filterMode = properties.new_filter as string;
 					break;
 				default:
 					break;
 			}
+			this.telemetry.track(event, properties);
 		}
 	}
 
 	private loadTelemetryLibrary(key: string, url: string, options: IDataObject) {
 		// @ts-ignore
-		this.telemetry = (window.rudderanalytics = window.rudderanalytics || []);
+		this._telemetry = (window.rudderanalytics = window.rudderanalytics || []);
 
 		this.telemetry.methods = ["load", "page", "track", "identify", "alias", "group", "ready", "reset", "getAnonymousId", "setAnonymousId"];
 		this.telemetry.factory = (t: any) => { // tslint:disable-line:no-any
@@ -88,7 +93,7 @@ class Telemetry {
 			const r = document.createElement("script");
 			r.type = "text/javascript";
 			r.async = !0;
-			r.src = "https://cdn.rudderlabs.com/v2/rudder-analytics.min.js?transport=beacon";
+			r.src = "https://cdn.rudderlabs.com/v1/rudder-analytics.min.js";
 			const a = document.getElementsByTagName("script")[0];
 			if(a && a.parentNode) {
 				a.parentNode.insertBefore(r, a);
