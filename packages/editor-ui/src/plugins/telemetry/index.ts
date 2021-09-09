@@ -3,6 +3,7 @@ import {
 	ITelemetrySettings,
 	IDataObject,
 } from 'n8n-workflow';
+import { INodeCreateElement } from "@/Interface";
 
 declare module 'vue/types/vue' {
 	interface Vue {
@@ -21,6 +22,17 @@ export function TelemetryPlugin(vue: typeof _Vue): void {
 	});
 }
 
+interface IUserNodesPanelSessionData {
+	nodeFilter: string;
+	resultsNodes: string[];
+	filterMode: string;
+}
+
+interface IUserNodesPanelSession {
+	sessionId: string;
+	data: IUserNodesPanelSessionData;
+}
+
 class Telemetry {
 
 	private _telemetry?: any; // tslint:disable-line:no-any
@@ -30,7 +42,7 @@ class Telemetry {
 		return window.rudderanalytics;
 	}
 
-	private userNodesPanelSession = {
+	private userNodesPanelSession: IUserNodesPanelSession = {
 		sessionId: '',
 		data: {
 			nodeFilter: '',
@@ -63,16 +75,32 @@ class Telemetry {
 					this.resetNodesPanelSession();
 					properties.nodes_panel_session_id = this.userNodesPanelSession.sessionId;
 					this.userNodesPanelSession.data.filterMode = properties.new_filter as string;
+					this.telemetry.track(event, properties);
 					break;
 				case 'User changed nodes panel filter':
 					properties.nodes_panel_session_id = this.userNodesPanelSession.sessionId;
 					this.userNodesPanelSession.data.filterMode = properties.new_filter as string;
+					this.telemetry.track(event, properties);
+					break;
+				case 'User entered nodes panel search term':
+					if(properties.newValue !== undefined) {
+						if((properties.newValue as string).length === 0 && this.userNodesPanelSession.data.nodeFilter.length > 0) {
+							this.telemetry.track(event, this.generateNodesPanelEvent());
+						}
+
+						if((properties.newValue as string).length > (properties.oldValue as string || '').length) {
+							this.userNodesPanelSession.data.nodeFilter = properties.newValue as string;
+							this.userNodesPanelSession.data.resultsNodes = ((properties.filteredNodes || []) as INodeCreateElement[]).map((node: INodeCreateElement) => node.key);
+						}
+					} else {
+						if(this.userNodesPanelSession.data.nodeFilter.length > 0 && this.userNodesPanelSession.data.nodeFilter !== '') {
+							this.telemetry.track(event, this.generateNodesPanelEvent());
+						}
+					}
 					break;
 				default:
 					break;
 			}
-
-			this.telemetry.track(event, properties);
 		}
 	}
 
@@ -82,6 +110,16 @@ class Telemetry {
 			nodeFilter: '',
 			resultsNodes: [],
 			filterMode: 'Regular',
+		};
+	}
+
+	private generateNodesPanelEvent() {
+		return {
+			search_string: this.userNodesPanelSession.data.nodeFilter,
+			results_count: this.userNodesPanelSession.data.resultsNodes.length,
+			results_nodes: this.userNodesPanelSession.data.resultsNodes,
+			filter_mode: this.userNodesPanelSession.data.filterMode,
+			nodes_panel_session_id: this.userNodesPanelSession.sessionId,
 		};
 	}
 

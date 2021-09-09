@@ -153,6 +153,12 @@ export default mixins(externalHooks).extend({
 				selectedType: this.selectedType,
 				filteredNodes: this.filteredNodeTypes,
 			});
+			this.$telemetry.trackNodesPanel('User entered nodes panel search term', {
+				oldValue,
+				newValue,
+				selectedType: this.selectedType,
+				filteredNodes: this.filteredNodeTypes,
+			});
 		},
 		selectedType(newValue, oldValue) {
 			this.$externalHooks().run('nodeCreateList.selectedTypeChanged', {
@@ -278,6 +284,7 @@ export default mixins(externalHooks).extend({
 	},
 	async destroyed() {
 		this.$externalHooks().run('nodeCreateList.destroyed');
+		this.$telemetry.trackNodesPanel('User entered nodes panel search term');
 	},
 });
 </script>
