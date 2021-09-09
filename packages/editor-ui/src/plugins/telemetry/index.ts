@@ -59,6 +59,11 @@ class Telemetry {
 	trackNodesPanel(event: string, properties: IDataObject = {}) {
 		if (this.telemetry) {
 			switch (event) {
+				case 'User opened nodes panel':
+					this.resetNodesPanelSession();
+					properties.nodes_panel_session_id = this.userNodesPanelSession.sessionId;
+					this.userNodesPanelSession.data.filterMode = properties.new_filter as string;
+					break;
 				case 'User changed nodes panel filter':
 					properties.nodes_panel_session_id = this.userNodesPanelSession.sessionId;
 					this.userNodesPanelSession.data.filterMode = properties.new_filter as string;
@@ -66,8 +71,18 @@ class Telemetry {
 				default:
 					break;
 			}
+
 			this.telemetry.track(event, properties);
 		}
+	}
+
+	private resetNodesPanelSession() {
+		this.userNodesPanelSession.sessionId = `nodes_panel_session_${(new Date()).valueOf()}`;
+		this.userNodesPanelSession.data = {
+			nodeFilter: '',
+			resultsNodes: [],
+			filterMode: 'Regular',
+		};
 	}
 
 	private loadTelemetryLibrary(key: string, url: string, options: IDataObject) {
