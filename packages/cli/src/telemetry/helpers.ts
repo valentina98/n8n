@@ -1,7 +1,7 @@
 /* eslint-disable import/no-cycle */
 import { IConnection, IDataObject, INode, INodeConnections } from 'n8n-workflow';
 import { URL } from 'url';
-import { WorkflowEntity } from '../databases/entities/WorkflowEntity';
+import { IWorkflowBase } from '..';
 
 interface INodesGraph {
 	node_types: string[];
@@ -18,7 +18,7 @@ interface INodeItem {
 	domain?: string;
 }
 
-export async function generateNodesGraph(workflow: WorkflowEntity): Promise<INodesGraph> {
+export function generateNodesGraph(workflow: IWorkflowBase): INodesGraph {
 	const nodesGraph: INodesGraph = {
 		node_types: [],
 		node_connections: [],

@@ -56,6 +56,7 @@ import {
 	WorkflowHelpers,
 } from '.';
 import * as Queue from './Queue';
+import { InternalHooksManager } from './InternalHooksManager';
 
 export class WorkflowRunner {
 	activeExecutions: ActiveExecutions.ActiveExecutions;
@@ -160,16 +161,21 @@ export class WorkflowRunner {
 			executionId = await this.runSubprocess(data, loadStaticData, executionId);
 		}
 
+		const postExecutePromise = this.activeExecutions.getPostExecutePromise(executionId);
+
 		const externalHooks = ExternalHooks();
+		postExecutePromise.then(async (executionData) => void InternalHooksManager.getInstance().onWorkflowPostExecute(data.workflowData, executionData))
+			.catch((error) => {
+				console.error('There was a problem running internal hook "onWorkflowPostExecute"', error);
+			});
+
 		if (externalHooks.exists('workflow.postExecute')) {
-			this.activeExecutions
-				.getPostExecutePromise(executionId)
-				.then(async (executionData) => {
-					await externalHooks.run('workflow.postExecute', [executionData, data.workflowData]);
-				})
-				.catch((error) => {
-					console.error('There was a problem running hook "workflow.postExecute"', error);
-				});
+			postExecutePromise.then(async (executionData) => {
+				await externalHooks.run('workflow.postExecute', [executionData, data.workflowData]);
+			})
+			.catch((error) => {
+				console.error('There was a problem running hook "workflow.postExecute"', error);
+			});
 		}
 
 		return executionId;

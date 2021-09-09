@@ -9,7 +9,7 @@ export class Telemetry {
 
 	private instanceId: string;
 
-	constructor(instanceId: string, n8nVersion: string) {
+	constructor(instanceId: string) {
 		this.instanceId = instanceId;
 
 		const enabled = config.get('telemetry.enabled') as boolean;
@@ -18,13 +18,15 @@ export class Telemetry {
 				config.get('telemetry.config.backend.key') as string,
 				config.get('telemetry.config.backend.url') as string,
 			);
+		}
+	}
 
+	async identify(traits?: IDataObject): Promise<void> {
+		if (this.client) {
 			this.client.identify({
 				userId: this.instanceId,
 				anonymousId: '000000000000',
-				traits: {
-					n8n_version: n8nVersion,
-				},
+				traits,
 			});
 		}
 	}

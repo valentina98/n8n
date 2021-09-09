@@ -110,7 +110,6 @@ import {
 	IExecutionsStopData,
 	IExecutionsSummary,
 	IExternalHooksClass,
-	IInternalHooksClass,
 	IN8nUISettings,
 	IPackageVersions,
 	ITagWithCountDb,
@@ -132,10 +131,9 @@ import {
 
 import * as config from '../config';
 
-import { InternalHooks } from './InternalHooks';
 import * as TagHelpers from './TagHelpers';
+import { InternalHooksManager } from './InternalHooksManager';
 import { TagEntity } from './databases/entities/TagEntity';
-import { Telemetry } from './telemetry';
 import { WorkflowEntity } from './databases/entities/WorkflowEntity';
 import { WorkflowNameRequest } from './WorkflowHelpers';
 
@@ -159,8 +157,6 @@ class App {
 	externalHooks: IExternalHooksClass;
 
 	waitTracker: WaitTrackerClass;
-
-	internalHooks: IInternalHooksClass;
 
 	defaultWorkflowName: string;
 
@@ -286,12 +282,9 @@ class App {
 			promClient.collectDefaultMetrics({ register });
 		}
 
-		this.versions = await GenericHelpers.getVersions();
-		this.frontendSettings.versionCli = this.versions.cli;
-		this.frontendSettings.instanceId = (await generateInstanceId()) as string;
+		this.frontendSettings.instanceId = await UserSettings.getInstanceId();
 
-		const telemetry = new Telemetry(this.frontendSettings.instanceId, this.versions.cli);
-		this.internalHooks = new InternalHooks(telemetry);
+		InternalHooksManager.init(this.frontendSettings.instanceId);
 
 		await this.externalHooks.run('frontend.settings', [this.frontendSettings]);
 
@@ -867,7 +860,10 @@ class App {
 							await TagHelpers.createRelations(req.params.id, tags, tablePrefix);
 						}
 
-						void this.internalHooks.onWorkflowTagsUpdated(req.params.id, tags.length);
+						void InternalHooksManager.getInstance().onWorkflowTagsUpdated(
+							req.params.id,
+							tags.length,
+						);
 					}
 
 					// We sadly get nothing back from "update". Neither if it updated a record
@@ -887,12 +883,12 @@ class App {
 					}
 
 					await this.externalHooks.run('workflow.afterUpdate', [workflow]);
-					void this.internalHooks.onWorkflowSave(workflow);
+					void InternalHooksManager.getInstance().onWorkflowSave(workflow);
 
 					if (workflow.active) {
 						// When the workflow is supposed to be active add it again
 						try {
-							void this.internalHooks.onWorkflowActivated(workflow);
+							void InternalHooksManager.getInstance().onWorkflowActivated(workflow);
 							await this.externalHooks.run('workflow.activate', [workflow]);
 							await this.activeWorkflowRunner.add(id, isActive ? 'update' : 'activate');
 						} catch (error) {
@@ -932,7 +928,7 @@ class App {
 				}
 
 				await Db.collections.Workflow!.delete(id);
-				void this.internalHooks.onWorkflowDeleted(id);
+				void InternalHooksManager.getInstance().onWorkflowDeleted(id);
 				await this.externalHooks.run('workflow.afterDelete', [id]);
 
 				return true;
@@ -2714,7 +2710,7 @@ export async function start(): Promise<void> {
 		console.log(`Version: ${versions.cli}`);
 
 		await app.externalHooks.run('n8n.ready', [app]);
-		void app.internalHooks.onServerStarted();
+		void InternalHooksManager.getInstance().onServerStarted(versions.cli);
 	});
 }
 

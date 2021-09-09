@@ -59,6 +59,7 @@ import {
 	WorkflowCredentials,
 	WorkflowHelpers,
 } from '.';
+import { InternalHooksManager } from './InternalHooksManager';
 
 const ERROR_TRIGGER_TYPE = config.get('nodes.errorTriggerType') as string;
 
@@ -903,6 +904,7 @@ export async function executeWorkflow(
 	}
 
 	await externalHooks.run('workflow.postExecute', [data, workflowData]);
+	void InternalHooksManager.getInstance().onWorkflowPostExecute(workflowData, data);
 
 	if (data.finished === true) {
 		// Workflow did finish successfully

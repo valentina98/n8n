@@ -282,11 +282,12 @@ export interface IExternalHooksClass {
 }
 
 export interface IInternalHooksClass {
-	onServerStarted(): Promise<void>;
+	onServerStarted(n8nVersion: string): Promise<void>;
 	onWorkflowSave(workflow: WorkflowEntity): Promise<void>;
 	onWorkflowActivated(workflow: WorkflowEntity): Promise<void>;
 	onWorkflowTagsUpdated(workflowId: string, tagsCount: number): Promise<void>;
 	onWorkflowDeleted(workflowId: string): Promise<void>;
+	onWorkflowPostExecute(workflow: IWorkflowBase, runData?: IRun): Promise<void>;
 }
 
 export interface IN8nConfig {

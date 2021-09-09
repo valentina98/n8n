@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import * as fs from 'fs';
 import * as path from 'path';
-import { randomBytes } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 // eslint-disable-next-line import/no-cycle
 import {
 	ENCRYPTION_KEY_ENV_OVERWRITE,
@@ -52,6 +52,8 @@ export async function prepareUserSettings(): Promise<IUserSettings> {
 		userSettings.encryptionKey = randomBytes(24).toString('base64');
 	}
 
+	userSettings.instanceId = await generateInstanceId(userSettings.encryptionKey);
+
 	// eslint-disable-next-line no-console
 	console.log(`UserSettings were generated and saved to: ${settingsPath}`);
 
@@ -82,6 +84,37 @@ export async function getEncryptionKey() {
 	}
 
 	return userSettings.encryptionKey;
+}
+
+/**
+ * Returns the instance ID
+ *
+ * @export
+ * @returns
+ */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export async function getInstanceId(): Promise<string> {
+	const userSettings = await getUserSettings();
+
+	if (userSettings === undefined) {
+		return '';
+	}
+
+	if (userSettings.instanceId === undefined) {
+		return '';
+	}
+
+	return userSettings.instanceId;
+}
+
+async function generateInstanceId(key?: string) {
+	const hash = key
+		? createHash('sha256')
+				.update(key.slice(Math.round(key.length / 2)))
+				.digest('hex')
+		: undefined;
+
+	return hash;
 }
 
 /**
