@@ -97,6 +97,20 @@ class Telemetry {
 						this.userNodesPanelSession.data.resultsNodes = ((properties.filteredNodes || []) as INodeCreateElement[]).map((node: INodeCreateElement) => node.key);
 					}
 					break;
+				case 'nodeCreateList.onCategoryExpanded':
+					properties.nodes_panel_session_id = this.userNodesPanelSession.sessionId;
+					this.telemetry.track('User viewed node category', properties);
+					break;
+				case 'nodeCreateList.onSubcategorySelected':
+					properties.nodes_panel_session_id = this.userNodesPanelSession.sessionId;
+					const selectedProperties = (properties.selected as IDataObject).properties as IDataObject;
+					if(selectedProperties && selectedProperties.subcategory) {
+						properties.category_name = selectedProperties.subcategory;
+					}
+					properties.is_subcategory = true;
+					delete properties.selected;
+					this.telemetry.track('User viewed node category', properties);
+					break;
 				default:
 					break;
 			}

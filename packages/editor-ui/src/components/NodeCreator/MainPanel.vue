@@ -254,6 +254,7 @@ export default mixins(externalHooks).extend({
 				);
 			} else {
 				this.activeCategory = [...this.activeCategory, category];
+				this.$telemetry.trackNodesPanel('nodeCreateList.onCategoryExpanded', { category_name: category });
 			}
 
 			this.activeIndex = this.categorized.findIndex(
@@ -263,6 +264,7 @@ export default mixins(externalHooks).extend({
 		onSubcategorySelected(selected: INodeCreateElement) {
 			this.activeSubcategoryIndex = 0;
 			this.activeSubcategory = selected;
+			this.$telemetry.trackNodesPanel('nodeCreateList.onSubcategorySelected', { selected });
 		},
 
 		onSubcategoryClose() {
