@@ -48,6 +48,7 @@ import {
 	IExecutionDb,
 	IExecutionFlattedDb,
 	IExecutionResponse,
+	InternalHooksManager,
 	IPushDataExecutionFinished,
 	IWorkflowBase,
 	IWorkflowExecuteProcess,
@@ -59,7 +60,6 @@ import {
 	WorkflowCredentials,
 	WorkflowHelpers,
 } from '.';
-import { InternalHooksManager } from './InternalHooksManager';
 
 const ERROR_TRIGGER_TYPE = config.get('nodes.errorTriggerType') as string;
 
