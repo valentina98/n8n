@@ -18,6 +18,10 @@ interface INodeItem {
 	domain?: string;
 }
 
+export function getNodeTypeForName(workflow: IWorkflowBase, nodeName: string): INode | undefined {
+	return workflow.nodes.find((node: INode) => node.name === nodeName);
+}
+
 export function generateNodesGraph(workflow: IWorkflowBase): INodesGraph {
 	const nodesGraph: INodesGraph = {
 		node_types: [],

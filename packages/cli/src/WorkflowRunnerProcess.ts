@@ -239,7 +239,7 @@ export class WorkflowRunnerProcess {
 				const { workflow } = executeWorkflowFunctionOutput;
 				result = await workflowExecute.processRunExecutionData(workflow);
 				await externalHooks.run('workflow.postExecute', [result, workflowData]);
-				void InternalHooksManager.getInstance().onWorkflowPostExecute(workflowData);
+				void InternalHooksManager.getInstance().onWorkflowPostExecute(workflowData, result);
 				await sendToParentProcess('finishExecution', { executionId, result });
 				delete this.childExecutions[executionId];
 			} catch (e) {

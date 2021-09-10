@@ -1,5 +1,5 @@
 /* eslint-disable import/no-cycle */
-import { IRun } from 'n8n-workflow';
+import { IDataObject, IRun } from 'n8n-workflow';
 import * as telemetryHelpers from './telemetry/helpers';
 import { IInternalHooksClass, IWorkflowBase } from '.';
 import { Telemetry } from './telemetry';
@@ -41,10 +41,34 @@ export class InternalHooksClass implements IInternalHooksClass {
 	}
 
 	async onWorkflowPostExecute(workflow: IWorkflowBase, runData?: IRun): Promise<void> {
-		await this.telemetry.track('onWorkflowPostExecute', {
+		const properties: IDataObject = {
 			workflow_id: workflow.id,
-			nodes_graph: telemetryHelpers.generateNodesGraph(workflow),
-			execution_mode: runData ? runData.mode : '',
-		});
+		};
+
+		if (runData !== undefined) {
+			properties.execution_mode = runData.mode;
+			if (runData.mode === 'manual') {
+				properties.nodes_graph = telemetryHelpers.generateNodesGraph(workflow);
+			}
+
+			properties.success = !!runData.finished;
+
+			if (!properties.success && runData?.data.resultData.error) {
+				properties.error_message = runData?.data.resultData.error.message;
+				properties.error_node_type = runData?.data.resultData.error.node?.type;
+
+				if (runData.data.resultData.lastNodeExecuted) {
+					const lastNode = telemetryHelpers.getNodeTypeForName(
+						workflow,
+						runData.data.resultData.lastNodeExecuted,
+					);
+					if (lastNode !== undefined) {
+						properties.error_node_type = lastNode.type;
+					}
+				}
+			}
+		}
+
+		await this.telemetry.track('Workflow execution finished', properties);
 	}
 }
