@@ -1024,6 +1024,8 @@ export default mixins(
 				}
 				this.stopLoading();
 
+				this.$telemetry.track('User imported workflow', { source: 'url' });
+
 				return workflowData;
 			},
 
