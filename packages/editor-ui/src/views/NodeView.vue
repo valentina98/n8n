@@ -823,6 +823,12 @@ export default mixins(
 				this.getSelectedNodesToSave().then((data) => {
 					const nodeData = JSON.stringify(data, null, 2);
 					this.copyToClipboard(nodeData);
+					if (data.nodes.length > 0) {
+						this.$telemetry.track('User copied nodes', {
+							node_types: data.nodes.map((node: INode) => node.type),
+							workflow_id: this.$store.getters.workflowId,
+						});
+					}
 				});
 			},
 
@@ -995,6 +1001,10 @@ export default mixins(
 						return;
 					}
 				}
+
+				this.$telemetry.track('User pasted nodes', {
+					workflow_id: this.$store.getters.workflowId,
+				});
 
 				return this.importWorkflowData(workflowData!);
 			},
