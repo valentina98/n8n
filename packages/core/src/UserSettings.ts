@@ -37,7 +37,12 @@ export async function prepareUserSettings(): Promise<IUserSettings> {
 	if (userSettings !== undefined) {
 		// Settings already exist, check if they contain the encryptionKey
 		if (userSettings.encryptionKey !== undefined) {
-			// Key already exists so return
+			// Key already exists
+			if (userSettings.instanceId === undefined) {
+				userSettings.instanceId = await generateInstanceId(userSettings.encryptionKey);
+				settingsCache = userSettings;
+			}
+
 			return userSettings;
 		}
 	} else {
@@ -174,7 +179,12 @@ export async function writeUserSettings(
 		await fsMkdir(path.dirname(settingsPath));
 	}
 
-	await fsWriteFile(settingsPath, JSON.stringify(userSettings, null, '\t'));
+	const settingsToWrite = { ...userSettings };
+	if (settingsToWrite.instanceId !== undefined) {
+		delete settingsToWrite.instanceId;
+	}
+
+	await fsWriteFile(settingsPath, JSON.stringify(settingsToWrite, null, '\t'));
 	settingsCache = JSON.parse(JSON.stringify(userSettings));
 
 	return userSettings;

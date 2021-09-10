@@ -126,7 +126,7 @@ export class WorkflowRunnerProcess {
 		const externalHooks = ExternalHooks();
 		await externalHooks.init();
 
-		const instanceId = await UserSettings.getInstanceId();
+		const instanceId = (await UserSettings.prepareUserSettings()).instanceId ?? '';
 		InternalHooksManager.init(instanceId);
 
 		// Credentials should now be loaded from database.

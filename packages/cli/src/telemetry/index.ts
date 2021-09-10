@@ -5,6 +5,7 @@ import { IDataObject } from 'n8n-workflow';
 import config = require('../../config');
 
 export class Telemetry {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	private client?: any;
 
 	private instanceId: string;
