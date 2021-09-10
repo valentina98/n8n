@@ -1232,6 +1232,7 @@ export default mixins(
 				this.$store.commit('setStateDirty', true);
 
 				this.$externalHooks().run('nodeView.addNodeButton', { nodeTypeName });
+				this.$telemetry.trackNodesPanel('nodeView.addNodeButton', { node_type: nodeTypeName });
 
 				// Automatically deselect all nodes and select the current one and also active
 				// current node

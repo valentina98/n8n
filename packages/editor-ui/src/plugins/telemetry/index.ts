@@ -70,15 +70,14 @@ class Telemetry {
 
 	trackNodesPanel(event: string, properties: IDataObject = {}) {
 		if (this.telemetry) {
+			properties.nodes_panel_session_id = this.userNodesPanelSession.sessionId;
 			switch (event) {
 				case 'nodeView.createNodeActiveChanged':
 					this.resetNodesPanelSession();
-					properties.nodes_panel_session_id = this.userNodesPanelSession.sessionId;
 					this.userNodesPanelSession.data.filterMode = properties.new_filter as string;
 					this.telemetry.track('User opened nodes panel', properties);
 					break;
 				case 'nodeCreateList.selectedTypeChanged':
-					properties.nodes_panel_session_id = this.userNodesPanelSession.sessionId;
 					this.userNodesPanelSession.data.filterMode = properties.new_filter as string;
 					this.telemetry.track('User changed nodes panel filter', properties);
 					break;
@@ -98,11 +97,9 @@ class Telemetry {
 					}
 					break;
 				case 'nodeCreateList.onCategoryExpanded':
-					properties.nodes_panel_session_id = this.userNodesPanelSession.sessionId;
 					this.telemetry.track('User viewed node category', properties);
 					break;
 				case 'nodeCreateList.onSubcategorySelected':
-					properties.nodes_panel_session_id = this.userNodesPanelSession.sessionId;
 					const selectedProperties = (properties.selected as IDataObject).properties as IDataObject;
 					if(selectedProperties && selectedProperties.subcategory) {
 						properties.category_name = selectedProperties.subcategory;
@@ -110,6 +107,9 @@ class Telemetry {
 					properties.is_subcategory = true;
 					delete properties.selected;
 					this.telemetry.track('User viewed node category', properties);
+					break;
+				case 'nodeView.addNodeButton':
+					this.telemetry.track('User added node to workflow canvas', properties);
 					break;
 				default:
 					break;
