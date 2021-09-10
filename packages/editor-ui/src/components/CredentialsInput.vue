@@ -332,6 +332,7 @@ export default mixins(
 			this.$emit('credentialsCreated', {data: result, options: { closeDialog }});
 
 			this.$externalHooks().run('credentials.create', { credentialTypeData: this.credentialTypeData });
+			this.$telemetry.track('User created credentials', { credential_type: this.credentialTypeData.name });
 
 			return result;
 		},
